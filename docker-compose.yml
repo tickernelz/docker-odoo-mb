@@ -1,0 +1,52 @@
+version: '3.1'
+services:
+  dbmb:
+    container_name: odoomb-db
+    restart: unless-stopped
+    image: postgres:12
+    ports:
+      - "15001:5432"
+    environment:
+      - POSTGRES_PASSWORD=odoo
+      - POSTGRES_USER=odoo
+      - POSTGRES_DB=postgres
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    networks:
+      public:
+        ipv4_address: 10.0.1.98
+    volumes:
+      - db-data:/var/lib/postgresql/data/pgdata
+
+  web:
+    container_name: odoomb-web
+    image: tickernelz/odoo-hm:d98278e727e4f147e3800d8d895ab4098aa01124
+    ports:
+      - "15002:8069"
+      - "15003:8072" # live chat
+    depends_on:
+      - dbmb
+    environment:
+      - HOST=dbmb
+      - USER=odoo
+      - PASSWORD=odoo
+    networks:
+      public:
+        ipv4_address: 10.0.1.99
+    volumes:
+      - web-data:/var/lib/odoo
+      - ./etc:/etc/odoo
+      - ./addons:/mnt/extra-addons
+      - /home/zhafron/Odoo/MB/basic:/mnt/addons-mb/basic
+      - /home/zhafron/Odoo/MB/core:/mnt/addons-mb/core
+      - /home/zhafron/Odoo/MB/modifier:/mnt/addons-mb/modifier
+
+volumes:
+  db-data:
+  web-data:
+
+networks:
+  public:
+    external:
+      name: public
+
+
